@@ -68,7 +68,7 @@ def require_api_key(f):
     """Декоратор для проверки API ключа"""
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        api_key = CONFIG['server'].get('api_key')
+        api_key = CONFIG.get('server', {}).get('api_key')
 
         # Если API ключ не настроен, пропускаем проверку
         if not api_key:
@@ -183,18 +183,35 @@ def check_code_security(code):
     # Проверка на очевидно опасные операции
     dangerous_patterns = [
         ('rm -rf', 'Опасная команда удаления файлов'),
+        ('shutil.rmtree', 'Опасное удаление директорий'),
+        ('os.remove', 'Удаление файлов'),
+        ('os.unlink', 'Удаление файлов'),
         ('__import__("os").system', 'Попытка выполнения системных команд'),
-        ('subprocess.Popen', 'Попытка запуска процессов'),
+        ('subprocess.popen', 'Попытка запуска процессов'),
+        ('subprocess.call', 'Попытка запуска процессов'),
+        ('subprocess.run', 'Попытка запуска процессов'),
+        ('eval(', 'Выполнение произвольного кода'),
+        ('exec(', 'Выполнение произвольного кода'),
+        ('compile(', 'Компиляция кода'),
+        ('pickle.loads', 'Десериализация (может выполнять код)'),
+        ('importlib.__import__', 'Динамический импорт'),
+        ('__import__', 'Динамический импорт'),
+        ('socket.', 'Сетевые операции'),
+        ('requests.', 'HTTP запросы'),
+        ('urllib.', 'HTTP запросы'),
         ('open(', 'Работа с файлами (может быть опасна)'),  # Предупреждение, но не блокировка
     ]
 
     code_lower = code.lower()
 
+    # Паттерны, которые только предупреждаются, но не блокируются
+    warning_patterns = ['open(', 'socket.', 'requests.', 'urllib.']
+
     for pattern, reason in dangerous_patterns:
         if pattern.lower() in code_lower:
             # Для некоторых паттернов только предупреждаем
-            if pattern == 'open(':
-                logger.warning(f"Код содержит работу с файлами: {reason}")
+            if pattern in warning_patterns:
+                logger.warning(f"Код содержит потенциально опасную операцию: {reason}")
                 continue
             return {'safe': False, 'reason': reason}
 
@@ -224,7 +241,7 @@ def execute_python_code(code):
 
     try:
         # Выполнение кода в отдельном процессе
-        timeout = CONFIG['security'].get('timeout', 30)
+        timeout = CONFIG.get('security', {}).get('timeout', 30)
 
         result = subprocess.run(
             [sys.executable, temp_file],
@@ -236,7 +253,7 @@ def execute_python_code(code):
         )
 
         # Ограничение размера вывода
-        max_output_size = CONFIG['security'].get('max_output_size', 10000)
+        max_output_size = CONFIG.get('security', {}).get('max_output_size', 10000)
         stdout = result.stdout[:max_output_size] if result.stdout else ''
         stderr = result.stderr[:max_output_size] if result.stderr else ''
 
@@ -269,8 +286,10 @@ def execute_python_code(code):
         # Удаление временного файла
         try:
             os.unlink(temp_file)
-        except:
-            pass
+        except OSError as e:
+            logger.warning(f"Не удалось удалить временный файл {temp_file}: {e}")
+        except Exception as e:
+            logger.error(f"Неожиданная ошибка при удалении временного файла: {e}")
 
 
 @app.route('/history', methods=['GET'])

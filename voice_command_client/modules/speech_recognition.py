@@ -4,7 +4,6 @@
 """
 import os
 import json
-import wave
 import pyaudio
 from vosk import Model, KaldiRecognizer
 import logging
@@ -128,15 +127,19 @@ class SpeechRecognizer:
         """
         logger.info("Запуск непрерывного прослушивания...")
 
-        stream = self.audio.open(
-            format=pyaudio.paInt16,
-            channels=1,
-            rate=self.sample_rate,
-            input=True,
-            input_device_index=device_index,
-            frames_per_buffer=self.chunk_size
-        )
-        stream.start_stream()
+        try:
+            stream = self.audio.open(
+                format=pyaudio.paInt16,
+                channels=1,
+                rate=self.sample_rate,
+                input=True,
+                input_device_index=device_index,
+                frames_per_buffer=self.chunk_size
+            )
+            stream.start_stream()
+        except Exception as e:
+            logger.error(f"Ошибка при открытии аудио потока: {e}")
+            raise
 
         try:
             while True:
@@ -159,6 +162,8 @@ class SpeechRecognizer:
                                 callback(text)
 
                         # Сброс распознавателя для новой фразы
+                        # Удаляем старый recognizer перед созданием нового
+                        del self.recognizer
                         self.recognizer = KaldiRecognizer(self.model, self.sample_rate)
 
         except KeyboardInterrupt:

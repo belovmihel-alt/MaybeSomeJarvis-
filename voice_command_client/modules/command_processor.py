@@ -181,11 +181,13 @@ print("Файл создан")
         dangerous_patterns = [
             'os.system',
             'subprocess.call',
+            'subprocess.popen',
             'eval(',
             'exec(',
             '__import__',
             'rm -rf',
-            'format(',  # format может быть опасен
+            'pickle.loads',
+            'compile(',
         ]
 
         code_lower = code.lower()
