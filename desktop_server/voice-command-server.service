@@ -1,0 +1,33 @@
+[Unit]
+Description=Voice Command Server for Desktop PC
+Documentation=https://github.com/your-repo/MaybeSomeJarvis
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=youruser
+Group=youruser
+WorkingDirectory=/home/youruser/MaybeSomeJarvis-/desktop_server
+Environment="PATH=/home/youruser/MaybeSomeJarvis-/desktop_server/venv/bin"
+ExecStart=/home/youruser/MaybeSomeJarvis-/desktop_server/venv/bin/python server.py
+
+# Перезапуск при падении
+Restart=always
+RestartSec=10
+
+# Логирование
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=voice-command-server
+
+# Безопасность
+NoNewPrivileges=true
+PrivateTmp=true
+
+# Ограничения ресурсов
+MemoryMax=2G
+CPUQuota=90%
+
+[Install]
+WantedBy=multi-user.target

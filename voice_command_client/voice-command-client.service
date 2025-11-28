@@ -1,0 +1,33 @@
+[Unit]
+Description=Voice Command Client for Orange Pi
+Documentation=https://github.com/your-repo/MaybeSomeJarvis
+After=network.target network-online.target ollama.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=orangepi
+Group=orangepi
+WorkingDirectory=/home/orangepi/MaybeSomeJarvis-/voice_command_client
+Environment="PATH=/home/orangepi/MaybeSomeJarvis-/voice_command_client/venv/bin"
+ExecStart=/home/orangepi/MaybeSomeJarvis-/voice_command_client/venv/bin/python main.py
+
+# Перезапуск при падении
+Restart=always
+RestartSec=10
+
+# Логирование
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=voice-command-client
+
+# Безопасность
+NoNewPrivileges=true
+PrivateTmp=true
+
+# Ограничения ресурсов
+MemoryMax=1G
+CPUQuota=80%
+
+[Install]
+WantedBy=multi-user.target

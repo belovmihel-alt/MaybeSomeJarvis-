@@ -1,0 +1,72 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Vosk models (слишком большие для git)
+voice_command_client/model/
+*.zip
+
+# Логи
+*.log
+logs/
+/tmp/
+
+# Конфигурация (может содержать секреты)
+# Раскомментируйте если хотите игнорировать
+# voice_command_client/config.yaml
+# desktop_server/config.yaml
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Временные файлы
+*.tmp
+*.bak
+*.orig
+
+# Аудио файлы (для тестов)
+*.wav
+*.mp3
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# dotenv
+.env
+.env.local
+
+# Системные файлы
+Thumbs.db
+desktop.ini
